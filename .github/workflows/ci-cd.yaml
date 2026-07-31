@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [development, staging, main]
   push:
-    branches: [development, staing, main]
+    branches: [development, staging, main]
 
 env:
   GCP_PROJECT_ID: fsl-challenge-503923
