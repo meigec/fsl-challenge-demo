@@ -70,6 +70,7 @@ jobs:
       
       - name: Deploy
         run: |
+          kubetl create namespace production
           kubectl apply -f k8s/ -n production
           kubectl set image statefulset/fsl-app \
             app=${{env.REGISTRY}}/fsl-challenge:${{ env.IMAGE_TAG }} \
