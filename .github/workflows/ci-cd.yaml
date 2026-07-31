@@ -13,6 +13,7 @@ env:
   GCP_REGION: us-central1
   ARTIFACT_REPO: fsl-app-image
   REGISTRY: us-central1-docker.pkg.dev/fsl-challenge-503923/fsl-app-image
+  IMAGE_TAG: ${{ github.sha }}
 
 jobs:
   ci:
@@ -62,22 +63,18 @@ jobs:
 
       - name: Build & Push
         env:
-          IMAGE_TAG: ${{github.sha}}
         run: |
-            docker build -t ${{env.REGISTRY}}/fsl-challenge:$IMAGE_TAG .
-            docker push ${{env.REGISTRY}}/fsl-challenge:$IMAGE_TAG
+            docker build -t ${{env.REGISTRY}}/fsl-challenge:${{ env.IMAGE_TAG }} .
+            docker push ${{env.REGISTRY}}/fsl-challenge:${{ env.IMAGE_TAG }}
 
       - run: gcloud container clusters get-credentials ${{env.GKE_CLUSTER_NAME}} --region ${{env.GCP_REGION}} --project ${{env.GCP_PROJECT_ID}}
       
       - name: Deploy
-        env:
-          IMAGE_TAG: ${{github.sha}}
-          REGISTRY: ${{env.REGISTRY}}
         run: |
           kubectl apply -f k8s/ -n production
           kubectl set image statefulset/fsl-app \
-            app=$REGISTRY/fsl-challenge:$IMAGE_TAG \
-            copy-files=$REGISTRY/fsl-challenge:$IMAGE_TAG \
+            app=${{env.REGISTRY}}/fsl-challenge:${{ env.IMAGE_TAG }} \
+            copy-files=${{env.REGISTRY}}/fsl-challenge:${{ env.IMAGE_TAG }} \
             -n production
           kubectl delete pod -l app=fsl-app -n production
           kubectl rollout status statefulset/fsl-app -n production --timeout=180s
