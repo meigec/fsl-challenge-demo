@@ -1,0 +1,11 @@
+# Prevents secrets and unnecessary files from being copied into the image.
+node_modules/
+.git/
+.github/
+.gitignore
+.dockerignore
+*.log
+*.md
+.git/
+.idea/
+.vscode/
