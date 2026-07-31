@@ -86,7 +86,3 @@ jobs:
         run: |
           kubectl rollout undo statefulset/fsl-app -n production
           echo "Rollback initiated"
-
-      
-
-
