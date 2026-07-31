@@ -1,0 +1,88 @@
+name: FSL CI/CD pipeline
+
+on:
+  pull_requests:
+    branches: [development, staging, main]
+  push:
+    branches: [development, staging, main]
+
+env:
+  GCP_PROJECT_ID: fsl-challenge-503923
+  GKE_CLUSTER_NAME: fsl-gke-cluster
+  GCP_REGION: us-central1
+  ARTIFACT_REPO: fsl-app-image
+  REGISTRY: us-central1-docker.pkg.dev/fsl-challenge-503923/fsl-app-image
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 15
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run lint
+      - run: CI=true npm run test
+      - run: npm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: build-folder
+          path: build/
+
+  cd-gke:
+    runs-on: ubuntu-latest
+    needs: ci
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+      - id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/343403015481/locations/global/workloadIdentityPools/github-pool-v2/providers/github-provider-v2
+          service_account: github-actions-sa@fsl-challenge-503923.iam.gserviceaccount.com
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: build-folder
+          path: build/
+
+      - uses: google-github-actions/setup-gcloud@v3
+        with:
+          project_id: ${{env.GCP_PROJECT_ID}}
+          install_components: 'gke-gcloud-auth-plugin'
+
+      - run: gcloud auth configure-docker ${{ env.GCP_REGION}}-docker.pkg.dev --quiet
+
+      - name: Build & Push
+        env: 
+          IMAGE_TAG: ${{github.sha}}
+        run: |
+          docker build -t ${{env.REGISTRY}}/fsl-challenge:$IMAGE_TAG .
+          docker push ${{env.REGISTRY}}/fsl-challenge:$IMAGE_TAG
+
+      - run: gcloud container clusters get-credentials ${{env.GKE_CLUSTER_NAME}} --region ${{env.GCP_REGION}} --project ${{env.GCP_PROJECT_ID}}
+
+      - name: Deploy
+        env:
+          IMAGE_TAG: ${{github.sha}}
+          REGISTRY: ${{env.REGISTRY}}
+        run:
+          kubectl apply -f k8s/ -n production
+          kubectl set image statefulset/fsl-app \
+            app=$REGISTRY/fsl-challenge:$IMAGE_TAG \
+            copy-files=$REGISTRY/fsl-challenge:$IMAGE_TAG \
+            -n production
+          kubectl delete pod -l app=fsl-app -n production
+          kubectl rollout status statefulset/fsl-app -n production --timeout=180s
+
+      - name: Rollback
+        if: failure()
+        run: |
+          kubectl rollout undo statefulset/fsl-app -n production
+          echo "Rolling back"

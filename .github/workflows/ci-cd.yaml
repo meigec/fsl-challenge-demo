@@ -1,4 +1,6 @@
+# --- Pipeline -----
 name: FSL ci-cd pipeline
+
 
 on:
   pull_request:
@@ -6,6 +8,7 @@ on:
   push:
     branches: [development, staging, main]
 
+# --- Environment Variables -----    
 env:
   GCP_PROJECT_ID: fsl-challenge-503923
   GKE_CLUSTER_NAME: fsl-gke-cluster
@@ -13,6 +16,7 @@ env:
   ARTIFACT_REPO: fsl-app-image
   REGISTRY: us-central1-docker.pkg.dev/fsl-challenge-503923/fsl-app-image
 
+  
 jobs:
   ci:
     runs-on: ubuntu-latest
