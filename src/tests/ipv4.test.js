@@ -1,7 +1,7 @@
 import { IPv4 } from "../lib/ipv4";
 
 test("network Address is calculated correctly", () => {
-  using 192.168.100.14/20 CIDR
+  // using 192.168.100.14/20 CIDR
   const ipv4 = new IPv4([192, 168, 100, 14], 20);
   expect(ipv4.networkAddress()).toBe("192.168.96.0");
 });
