@@ -21,6 +21,7 @@ spec:
       containers:
       - name: app
         image: fsl-challenge:latest
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8080
           name: web
