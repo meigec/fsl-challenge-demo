@@ -16,7 +16,7 @@ kind: Service
 metadata:
   name: fsl-app
 spec:
-  type: ClusterIP # LoadBalancer
+  type: LoadBalancer # ClusterIP/LoadBalancer
   selector:
     app: fsl-app
   ports:
