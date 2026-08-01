@@ -17,7 +17,7 @@ spec:
         - name: copy-files
           image: fsl-challenge:latest
           imagePullPolicy: IfNotPresent
-          command: ['sh', '-c', 'cp -r /usr/share/nginx/html /mnt/data']
+          command: ['sh', '-c', 'cp -r /usr/share/nginx/html/. /mnt/data']
           volumeMounts:
             - mountPath: /mnt/data
               name: www
