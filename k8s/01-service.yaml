@@ -17,7 +17,7 @@ metadata:
   name: fsl-app
   namespace: production
 spec:
-  type: ClusterIP # LoadBalancer
+  type: LoadBalancer #  ClusterIP
   selector:
     app: fsl-app
   ports:
