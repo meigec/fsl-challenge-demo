@@ -46,12 +46,13 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
       - id: auth
         uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: projects/343403015481/locations/global/workloadIdentityPools/github-pool-v2/providers/github-provider-v2
           service_account: github-actions-sa@fsl-challenge-503923.iam.gserviceaccount.com
-
+      
       - uses: actions/download-artifact@v4
         with:
           name: build-folder
@@ -63,15 +64,15 @@ jobs:
           install_components: 'gke-gcloud-auth-plugin'
 
       - run: gcloud auth configure-docker ${{env.GCP_REGION}}-docker.pkg.dev --quiet
-      
-      - name: Build & push
+
+      - name: Build & Push
         run: |
           docker build -t ${{env.REGISTRY}}/fsl-challenge:${{env.IMAGE_TAG}} .
           docker push ${{env.REGISTRY}}/fsl-challenge:${{env.IMAGE_TAG}}
 
       - run: gcloud container clusters get-credentials ${{env.GKE_CLUSTER_NAME}} --region ${{env.GCP_REGION}} --project ${{env.GCP_PROJECT_ID}}
 
-      - name: Deploy
+      - name: Deploy GKE
         run: |
           kubectl apply -f k8s/ -n production
           kubectl set image statefulset/fsl-app \
@@ -79,10 +80,10 @@ jobs:
             copy-files=${{env.REGISTRY}}/fsl-challenge:${{env.IMAGE_TAG}} \
             -n production
           kubectl delete pod -l app=fsl-app -n production
-          kubectl rollout status statefulset/fsl-app -n production --timeout=180s
+          kubectl rollout status statefulset/fsl-app -n production --timeout=100s
 
       - name: Rollback
         if: failure()
         run: |
-          kubectl rollout undo statefulset/fsl-app -n production
+          kubectl rollout undo statefulset/fsl-app -n production 
           echo "Rolling back"
