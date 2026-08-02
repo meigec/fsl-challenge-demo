@@ -1,12 +1,6 @@
+name: fsl-challenge pipeline
+
 ### ---- Project Pre-built environment set up ----
-name: ci-cd pipeline
-
-on:
-  pull_request:
-    branches: [development, staging, main]
-  push:
-    branches: [development, staging, main]
-
 env:
   GCP_PROJECT_ID: fsl-challenge-503923
   GKE_CLUSTER_NAME: fsl-gke-cluster
