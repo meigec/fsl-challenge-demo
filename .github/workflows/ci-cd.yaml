@@ -1,6 +1,6 @@
-### ---- Project Pre-built environment set up ----
-name: fsl-challenge pipeline
 
+name: fsl-challenge pipeline
+### ---- Project Pre-built environment set up ----
 on:
   pull_request:
     branches: [development, staging, main]
