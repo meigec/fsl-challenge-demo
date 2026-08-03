@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: fsl-app
+  namespace: production
+spec:
+  serviceName: fsl-app-headless
+  replicas: 3
+  selector:
+    matchLabels:
+      app: fsl-app
+  template:
+    metadata:
+      labels:
+        app: fsl-app
+    spec:
+      initContainers:
+      - name: copy-files
+        image: fsl-challenge:latest
+        imagePullPolicy: IfNotPresent
+        command: ['sh', '-c', 'cp -r /usr/share/nginx/html/. /mnt/data']
+        volumeMounts:
+        - name: www
+          mountPath: /mnt/data
+      containers:
+      - name: app
+        image: fsl-challenge:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+          name: web
+        volumeMounts:
+        - name: www
+          mountPath: /usr/share/nginx/html
+  volumeClaimTemplates:
+  - metadata:
+      name: www
+    spec:
+      accessModes: ['ReadWriteOnce']
+      resources:
+        requests:
+          storage: 1Gi
