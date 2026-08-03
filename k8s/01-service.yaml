@@ -1,6 +1,6 @@
 apiVersion: v1
 kind: Service
-metadata: 
+metadata:
   name: fsl-app-headless
   namespace: production
 spec:
@@ -13,11 +13,11 @@ spec:
 ---
 apiVersion: v1
 kind: Service
-metadata: 
+metadata:
   name: fsl-app
   namespace: production
 spec:
-  type: LoadBalancer # LoadBalancer
+  type: LoadBalancer # 
   selector:
     app: fsl-app
   ports:
