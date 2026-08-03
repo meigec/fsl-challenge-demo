@@ -17,7 +17,7 @@ spec:
       initContainers:
       - name: copy-files
         image: fsl-challenge:latest
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: IfNotPresent 
         command: ['sh', '-c', 'cp -r /usr/share/nginx/html/. /mnt/data']
         volumeMounts:
         - name: www
@@ -25,7 +25,7 @@ spec:
       containers:
       - name: app
         image: fsl-challenge:latest
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: IfNotPresent 
         ports:
         - containerPort: 8080
           name: web
